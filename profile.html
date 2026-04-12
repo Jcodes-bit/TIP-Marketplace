@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Profile — TIP Marketplace</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23F5C400'/><text y='72' x='50' text-anchor='middle' font-size='58' font-family='Arial Black,sans-serif' font-weight='900' fill='%23000'>TIP</text></svg>" />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --yellow: #F5C400;
+    --yellow-glow: rgba(245,196,0,0.25);
+    --bg: #0c0c0c;
+    --card: #141414;
+    --card2: #1a1a1a;
+    --border2: #222;
+    --text: #efefef;
+    --muted: #666;
+    --grid: rgba(245,196,0,0.06);
+    --red: #ff4d4d;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; visibility: hidden; }
+  body.ready { visibility: visible; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(12,12,12,0.92); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border2);
+    display: flex; align-items: center; padding: 0 24px; height: 58px; gap: 0;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-right: 24px; flex-shrink: 0; }
+  .nav-logo .badge { background: var(--yellow); color: #000; font-family: 'Bebas Neue', sans-serif; font-size: 18px; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 14px var(--yellow-glow); }
+  .nav-logo .wordmark { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px; color: var(--text); }
+  .nav-logo .wordmark span { color: var(--yellow); }
+  .nav-back { display: flex; align-items: center; gap: 8px; background: var(--card2); border: 1px solid var(--border2); border-radius: 8px; padding: 7px 14px; color: var(--text); font-size: 13px; font-weight: 500; text-decoration: none; transition: border-color .2s; margin-left: auto; }
+  .nav-back:hover { border-color: var(--muted); }
+
+  /* PAGE */
+  .page { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* PROFILE CARD */
+  .profile-card {
+    background: var(--card); border: 1px solid var(--border2);
+    border-radius: 24px; overflow: hidden;
+  }
+
+  /* COVER BANNER */
+  .cover-banner {
+    height: 140px;
+    background: linear-gradient(135deg, #1a1400 0%, #2a1f00 40%, #111 100%);
+    border-bottom: 1px solid var(--border2); position: relative;
+  }
+  .cover-banner::after {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(245,196,0,0.03) 10px, rgba(245,196,0,0.03) 20px);
+  }
+
+  /* AVATAR AREA */
+  .avatar-row { display: flex; align-items: flex-end; justify-content: space-between; padding: 0 28px; margin-top: -50px; position: relative; z-index: 1; }
+  .avatar-wrap { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
+  .avatar-img {
+    width: 100px; height: 100px; border-radius: 50%;
+    background: var(--yellow); border: 4px solid var(--card);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; font-weight: 700; color: #000; overflow: hidden;
+    object-fit: cover;
+  }
+  .avatar-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .avatar-edit-btn {
+    position: absolute; bottom: 4px; right: 4px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--yellow); border: 2px solid var(--card);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; cursor: pointer; transition: transform .15s;
+  }
+  .avatar-edit-btn:hover { transform: scale(1.1); }
+  #avatarFileInput { display: none; }
+
+  /* PROFILE INFO */
+  .profile-info { padding: 16px 28px 28px; }
+  .display-name { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 1px; line-height: 1.1; margin-bottom: 4px; }
+  .display-email { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .display-bio { font-size: 14px; color: var(--text); line-height: 1.6; opacity: 0.8; min-height: 20px; }
+  .display-bio.empty { color: var(--muted); font-style: italic; }
+
+  /* EDIT FORM */
+  .edit-section {
+    margin: 0 28px 28px; padding: 24px;
+    background: var(--card2); border: 1px solid var(--border2);
+    border-radius: 16px;
+  }
+  .edit-section-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; margin-bottom: 20px; color: var(--yellow); }
+
+  .form-group { margin-bottom: 18px; }
+  .form-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+  .form-input, .form-textarea {
+    width: 100%; background: var(--card); border: 1px solid var(--border2);
+    border-radius: 10px; padding: 12px 14px;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+    outline: none; transition: border-color .2s;
+  }
+  .form-input:focus, .form-textarea:focus { border-color: rgba(245,196,0,0.4); }
+  .form-textarea { resize: vertical; min-height: 90px; }
+  .form-hint { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+  .form-actions { display: flex; gap: 10px; margin-top: 4px; }
+  .save-btn {
+    flex: 1; padding: 13px;
+    background: var(--yellow); border: none; border-radius: 10px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px;
+    color: #000; cursor: pointer; transition: transform .15s, box-shadow .15s;
+  }
+  .save-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 18px var(--yellow-glow); }
+  .save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--card); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 12px 22px;
+    font-size: 14px; font-weight: 500; color: var(--text);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    transition: transform .35s cubic-bezier(.22,1,.36,1), opacity .35s;
+    opacity: 0; z-index: 999; white-space: nowrap;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(0,200,100,0.3); }
+  .toast.error   { border-color: rgba(255,77,77,0.3); }
+
+  /* LISTINGS SECTION */
+  .section-title-row { display: flex; align-items: center; justify-content: space-between; padding: 0 28px; margin-bottom: 16px; }
+  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; }
+  .section-title span { color: var(--yellow); }
+  .listings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; padding: 0 28px 28px; }
+  .listing-card { background: var(--card2); border: 1px solid var(--border2); border-radius: 14px; overflow: hidden; transition: transform .2s, border-color .2s; cursor: pointer; }
+  .listing-card:hover { transform: translateY(-3px); border-color: rgba(245,196,0,0.3); }
+  .listing-thumb { width: 100%; height: 140px; background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 36px; overflow: hidden; }
+  .listing-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .listing-info { padding: 12px; }
+  .listing-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .listing-price { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--yellow); }
+  .listing-cat { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .no-listings { padding: 40px 28px; text-align: center; color: var(--muted); font-size: 14px; }
+  .no-listings .nl-icon { font-size: 36px; margin-bottom: 10px; }
+
+  /* DANGER ZONE */
+  .danger-section { margin: 0 28px 28px; padding: 20px 24px; border: 1px solid rgba(255,77,77,0.2); border-radius: 16px; }
+  .danger-title { font-size: 13px; font-weight: 600; color: var(--red); margin-bottom: 8px; }
+  .danger-desc { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+  .sign-out-btn { padding: 10px 20px; background: rgba(255,77,77,0.08); border: 1px solid rgba(255,77,77,0.3); border-radius: 8px; color: var(--red); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; }
+  .sign-out-btn:hover { background: rgba(255,77,77,0.16); }
+
+  /* AVATAR PREVIEW MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 600; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: var(--card); border: 1px solid var(--border2); border-radius: 20px; padding: 32px; width: 100%; max-width: 380px; animation: modalIn 0.25s cubic-bezier(.22,1,.36,1); text-align: center; }
+  @keyframes modalIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; margin-bottom: 20px; }
+  .avatar-preview { width: 120px; height: 120px; border-radius: 50%; margin: 0 auto 20px; overflow: hidden; background: var(--yellow); display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; color: #000; }
+  .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 4px; }
+  .modal-cancel { flex: 1; padding: 12px; background: var(--card2); border: 1px solid var(--border2); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; }
+  .modal-confirm { flex: 1; padding: 12px; background: var(--yellow); border: none; border-radius: 10px; color: #000; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; cursor: pointer; }
+  .modal-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .loader-small { width: 18px; height: 18px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #000; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <div class="badge">TIP</div>
+    <span class="wordmark">TIP <span>MARKETPLACE</span></span>
+  </a>
+  <a class="nav-back" href="index.html">← Back to Marketplace</a>
+</nav>
+
+<div class="page">
+
+  <!-- PROFILE CARD -->
+  <div class="profile-card">
+    <div class="cover-banner"></div>
+    <div class="avatar-row">
+      <div class="avatar-wrap">
+        <div class="avatar-img" id="avatarDisplay"><span id="avatarInitial">?</span></div>
+        <div class="avatar-edit-btn" id="avatarEditBtn" title="Change photo">✏️</div>
+        <input type="file" id="avatarFileInput" accept="image/*" />
+      </div>
+    </div>
+    <div class="profile-info">
+      <div class="display-name" id="displayName">Loading…</div>
+      <div class="display-email" id="displayEmail"></div>
+      <div class="display-bio empty" id="displayBio">No bio yet.</div>
+    </div>
+  </div>
+
+  <!-- EDIT FORM -->
+  <div style="margin-top:24px">
+    <div class="edit-section">
+      <div class="edit-section-title">Edit Profile</div>
+      <div class="form-group">
+        <label class="form-label">Display Name</label>
+        <input class="form-input" id="editName" type="text" placeholder="Your full name" maxlength="60" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bio</label>
+        <textarea class="form-textarea" id="editBio" placeholder="Tell others a bit about yourself…" maxlength="200"></textarea>
+        <div class="form-hint"><span id="bioCount">0</span>/200 characters</div>
+      </div>
+      <div class="form-actions">
+        <button class="save-btn" id="saveBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY LISTINGS -->
+  <div style="margin-top:32px">
+    <div class="section-title-row">
+      <div class="section-title">My <span>Listings</span></div>
+    </div>
+    <div class="listings-grid" id="myListingsGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted)">
+        <div style="font-size:28px;margin-bottom:8px">⏳</div>Loading…
+      </div>
+    </div>
+  </div>
+
+  <!-- DANGER ZONE -->
+  <div style="margin-top:32px">
+    <div class="profile-card">
+      <div class="danger-section">
+        <div class="danger-title">Sign Out</div>
+        <div class="danger-desc">You'll be redirected to the login page.</div>
+        <button class="sign-out-btn" id="signOutBtn">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- AVATAR PREVIEW MODAL -->
+<div class="modal-overlay" id="avatarModal">
+  <div class="modal">
+    <div class="modal-title">Change Profile Photo</div>
+    <div class="avatar-preview" id="avatarPreview"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" id="avatarCancelBtn">Cancel</button>
+      <button class="modal-confirm" id="avatarConfirmBtn">Save Photo</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp }           from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut, updateProfile }
+    from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot, orderBy }
+    from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDtWOAUuHIGeAGScFF0MNZlTTfL6o-vvqY",
+    authDomain: "tip-marketplace.firebaseapp.com",
+    projectId: "tip-marketplace",
+    storageBucket: "tip-marketplace.firebasestorage.app",
+    messagingSenderId: "327363102547",
+    appId: "1:327363102547:web:101bbed6022f328f80c3a6"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  let currentUser   = null;
+  let pendingAvatar = null; // base64 string pending confirmation
+
+  // ── TOAST ──
+  let toastTimer;
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+    t.className = `toast ${type} show`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── COMPRESS IMAGE TO BASE64 ──
+  function compressToBase64(file, maxSize = 200, quality = 0.82) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        const max = maxSize;
+        if (w > h) { if (w > max) { h = Math.round(h * max / w); w = max; } }
+        else        { if (h > max) { w = Math.round(w * max / h); h = max; } }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => reject(new Error('Image load failed'));
+      img.src = url;
+    });
+  }
+
+  // ── SET AVATAR DISPLAY ──
+  function setAvatarDisplay(base64OrUrl, initial) {
+    const el = document.getElementById('avatarDisplay');
+    if (base64OrUrl) {
+      el.innerHTML = `<img src="${base64OrUrl}" alt="avatar" />`;
+    } else {
+      el.innerHTML = `<span>${initial}</span>`;
+    }
+  }
+
+  // ── AUTH ──
+  onAuthStateChanged(auth, async user => {
+    if (!user) { window.location.href = 'login.html'; return; }
+    currentUser = user;
+    document.body.classList.add('ready');
+
+    const first = (user.displayName || 'User').split(' ')[0];
+    const initial = first[0].toUpperCase();
+
+    // Load profile doc from Firestore
+    const profileRef = doc(db, 'profiles', user.uid);
+    const profileSnap = await getDoc(profileRef);
+    const profile = profileSnap.exists() ? profileSnap.data() : {};
+
+    const savedName  = profile.displayName || user.displayName || '';
+    const savedBio   = profile.bio || '';
+    const savedPhoto = profile.photoBase64 || user.photoURL || null;
+
+    // Populate display
+    document.getElementById('displayName').textContent  = savedName || 'No name set';
+    document.getElementById('displayEmail').textContent = user.email || '';
+    const bioEl = document.getElementById('displayBio');
+    if (savedBio) { bioEl.textContent = savedBio; bioEl.classList.remove('empty'); }
+    else          { bioEl.textContent = 'No bio yet.'; bioEl.classList.add('empty'); }
+
+    setAvatarDisplay(savedPhoto, initial);
+
+    // Populate form
+    document.getElementById('editName').value = savedName;
+    document.getElementById('editBio').value  = savedBio;
+    document.getElementById('bioCount').textContent = savedBio.length;
+
+    // Load my listings
+    subscribeMyListings(user.uid);
+  });
+
+  // ── BIO COUNTER ──
+  document.getElementById('editBio').addEventListener('input', e => {
+    document.getElementById('bioCount').textContent = e.target.value.length;
+  });
+
+  // ── SAVE PROFILE ──
+  document.getElementById('saveBtn').addEventListener('click', async () => {
+    const name = document.getElementById('editName').value.trim();
+    const bio  = document.getElementById('editBio').value.trim();
+    if (!name) { showToast('Please enter a display name.', 'error'); return; }
+
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.innerHTML = '<span class="loader-small"></span>';
+
+    try {
+      const profileRef = doc(db, 'profiles', currentUser.uid);
+      const existing   = (await getDoc(profileRef)).data() || {};
+
+      await setDoc(profileRef, {
+        displayName: name,
+        bio,
+        email: currentUser.email,
+        photoBase64: existing.photoBase64 || null,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
+      // also update Firebase Auth display name
+      await updateProfile(currentUser, { displayName: name });
+
+      // update display
+      document.getElementById('displayName').textContent = name;
+      const bioEl = document.getElementById('displayBio');
+      if (bio) { bioEl.textContent = bio; bioEl.classList.remove('empty'); }
+      else     { bioEl.textContent = 'No bio yet.'; bioEl.classList.add('empty'); }
+
+      showToast('Profile saved!');
+    } catch (err) {
+      console.error(err); showToast('Failed to save. Try again.', 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Save Changes';
+    }
+  });
+
+  // ── AVATAR UPLOAD ──
+  document.getElementById('avatarEditBtn').addEventListener('click', () => {
+    document.getElementById('avatarFileInput').click();
+  });
+
+  document.getElementById('avatarFileInput').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    e.target.value = '';
+
+    try {
+      const base64 = await compressToBase64(file, 300, 0.85);
+      pendingAvatar = base64;
+
+      // show preview modal
+      const prev = document.getElementById('avatarPreview');
+      prev.innerHTML = `<img src="${base64}" alt="preview" />`;
+      document.getElementById('avatarModal').classList.add('active');
+    } catch (err) {
+      showToast('Could not load image.', 'error');
+    }
+  });
+
+  document.getElementById('avatarCancelBtn').addEventListener('click', () => {
+    document.getElementById('avatarModal').classList.remove('active');
+    pendingAvatar = null;
+  });
+
+  document.getElementById('avatarConfirmBtn').addEventListener('click', async () => {
+    if (!pendingAvatar) return;
+    const btn = document.getElementById('avatarConfirmBtn');
+    btn.disabled = true; btn.innerHTML = '<span class="loader-small"></span>';
+
+    try {
+      const profileRef = doc(db, 'profiles', currentUser.uid);
+      await setDoc(profileRef, { photoBase64: pendingAvatar, updatedAt: new Date().toISOString() }, { merge: true });
+
+      // update display avatar
+      const first   = (currentUser.displayName || 'User').split(' ')[0];
+      setAvatarDisplay(pendingAvatar, first[0].toUpperCase());
+
+      document.getElementById('avatarModal').classList.remove('active');
+      pendingAvatar = null;
+      showToast('Profile photo updated!');
+    } catch (err) {
+      console.error(err); showToast('Failed to save photo.', 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Save Photo';
+    }
+  });
+
+  // close avatar modal on overlay click
+  document.getElementById('avatarModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('avatarModal')) {
+      document.getElementById('avatarModal').classList.remove('active');
+      pendingAvatar = null;
+    }
+  });
+
+  // ── MY LISTINGS ──
+  function catEmoji(cat) { return { Academic:'📚', General:'📦', Food:'🍱' }[cat] || '📦'; }
+  function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function subscribeMyListings(uid) {
+    const q = query(collection(db, 'listings'), where('sellerId', '==', uid), orderBy('createdAt', 'desc'));
+    onSnapshot(q, snap => {
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderMyListings(items);
+    });
+  }
+
+  function renderMyListings(items) {
+    const grid = document.getElementById('myListingsGrid');
+    if (!items.length) {
+      grid.innerHTML = `<div class="no-listings"><div class="nl-icon">🛒</div>You haven't posted anything yet.</div>`;
+      return;
+    }
+    grid.innerHTML = items.map(item => {
+      const cover = item.imagesBase64?.length ? item.imagesBase64[0] : (item.imageBase64 || null);
+      return `<div class="listing-card" onclick="window.location.href='index.html'">
+        <div class="listing-thumb">${cover ? `<img src="${cover}" alt="${esc(item.name)}" loading="lazy"/>` : catEmoji(item.category)}</div>
+        <div class="listing-info">
+          <div class="listing-cat">${esc(item.category)}</div>
+          <div class="listing-name">${esc(item.name)}</div>
+          <div class="listing-price">₱${Number(item.price).toLocaleString()}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── SIGN OUT ──
+  document.getElementById('signOutBtn').addEventListener('click', () =>
+    signOut(auth).then(() => { window.location.href = 'login.html'; })
+  );
+</script>
+</body>
+</html>
