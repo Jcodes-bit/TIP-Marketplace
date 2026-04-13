@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TIP Marketplace</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23F5C400'/><text y='72' x='50' text-anchor='middle' font-size='58' font-family='Arial Black,sans-serif' font-weight='900' fill='%23000'>TIP</text></svg>" />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --yellow: #F5C400;
+    --yellow-glow: rgba(245,196,0,0.25);
+    --bg: #0c0c0c;
+    --card: #141414;
+    --card2: #1a1a1a;
+    --border: rgba(245,196,0,0.1);
+    --border2: #222;
+    --text: #efefef;
+    --muted: #666;
+    --grid: rgba(245,196,0,0.06);
+    --red: #ff4d4d;
+    --green: #00c864;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; visibility: hidden; }
+  body.ready { visibility: visible; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(12,12,12,0.92); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border2);
+    display: flex; align-items: center; padding: 0 24px; height: 58px;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-right: 24px; flex-shrink: 0; }
+  .nav-logo .badge { background: var(--yellow); color: #000; font-family: 'Bebas Neue', sans-serif; font-size: 18px; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 14px var(--yellow-glow); }
+  .nav-logo .wordmark { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px; color: var(--text); }
+  .nav-logo .wordmark span { color: var(--yellow); }
+  .nav-menu { display: flex; align-items: center; gap: 4px; flex: 1; list-style: none; }
+  .nav-btn { background: none; border: none; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; padding: 6px 12px; border-radius: 6px; transition: background .15s, color .15s; }
+  .nav-btn:hover, .nav-btn.active { background: rgba(245,196,0,0.07); color: var(--yellow); }
+  .nav-search { display: flex; align-items: center; background: var(--card2); border: 1px solid var(--border2); border-radius: 8px; padding: 0 10px; gap: 8px; height: 36px; width: 240px; transition: border-color .2s; }
+  .nav-search:focus-within { border-color: rgba(245,196,0,0.4); }
+  .nav-search input { background: none; border: none; outline: none; color: var(--text); font-size: 13px; width: 100%; font-family: 'DM Sans', sans-serif; }
+  .nav-right { display: flex; align-items: center; gap: 8px; margin-left: 16px; }
+
+  /* PROFILE PILL */
+  .profile-wrap { position: relative; }
+  .profile-btn { display: flex; align-items: center; gap: 8px; background: var(--card2); border: 1px solid var(--border2); border-radius: 20px; padding: 4px 10px 4px 4px; cursor: pointer; transition: border-color 0.2s; }
+  .profile-btn:hover { border-color: var(--muted); }
+  .profile-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--yellow); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #000; overflow: hidden; }
+  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .profile-name { font-size: 12px; font-weight: 500; color: var(--text); max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* DROPDOWN */
+  .dropdown-menu { position: absolute; top: calc(100% + 10px); right: 0; width: 210px; background: var(--card); border: 1px solid var(--border2); border-radius: 14px; padding: 8px; display: none; flex-direction: column; box-shadow: 0 12px 32px rgba(0,0,0,0.65); z-index: 200; gap: 2px; }
+  .dropdown-menu.active { display: flex; }
+  .dropdown-profile-header { display: flex; align-items: center; gap: 10px; padding: 10px 12px 12px; border-bottom: 1px solid var(--border2); margin-bottom: 6px; }
+  .dropdown-profile-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #000; overflow: hidden; }
+  .dropdown-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .dropdown-profile-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dropdown-profile-email { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .dropdown-divider { height: 1px; background: var(--border2); margin: 6px 4px; }
+  .dropdown-item { padding: 9px 12px; font-size: 13px; color: var(--text); border-radius: 8px; transition: background 0.15s; cursor: pointer; background: none; border: none; text-align: left; width: 100%; font-family: inherit; display: flex; align-items: center; gap: 9px; position: relative; }
+  .dropdown-item:hover { background: var(--card2); }
+  .dropdown-item .di { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+  .dropdown-item.logout { color: var(--red); }
+  .dropdown-item.logout:hover { background: rgba(255,77,77,0.08); }
+  .unread-badge { background: var(--red); color: #fff; font-size: 10px; font-weight: 700; border-radius: 20px; padding: 2px 6px; margin-left: auto; }
+
+  /* PAGE */
+  .page { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; min-height: calc(100vh - 58px); }
+  .main-feed { padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+  .feed-header h2 { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; }
+  .feed-header h2 span { color: var(--yellow); }
+  .feed-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .sort-wrap { position: relative; display: flex; align-items: center; }
+  .sort-select {
+    appearance: none; -webkit-appearance: none;
+    background: var(--card2); border: 1px solid var(--border2);
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    padding: 8px 36px 8px 14px; border-radius: 10px; cursor: pointer;
+    outline: none; transition: border-color .2s;
+  }
+  .sort-select:hover, .sort-select:focus { border-color: rgba(245,196,0,0.4); color: var(--yellow); }
+  .sort-select option { background: var(--card2); color: var(--text); }
+  .sort-chevron {
+    position: absolute; right: 12px; pointer-events: none;
+    color: var(--muted); font-size: 11px;
+  }
+  .cta-bar { background: linear-gradient(120deg, rgba(245,196,0,0.07), rgba(245,196,0,0.02)); border: 1px solid rgba(245,196,0,0.18); border-radius: 14px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .cta-btn { background: var(--yellow); color: #000; font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1.5px; border: none; border-radius: 8px; padding: 10px 22px; cursor: pointer; transition: transform .15s; white-space: nowrap; box-shadow: 0 0 18px var(--yellow-glow); }
+  .cta-btn:hover { transform: scale(1.03); }
+
+  /* GRID */
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+  .product-card { background: var(--card); border: 1px solid var(--border2); border-radius: 16px; overflow: hidden; transition: transform .2s, border-color .2s; cursor: pointer; position: relative; }
+  .product-card:hover { transform: translateY(-4px); border-color: rgba(245,196,0,0.3); }
+  .product-img { width: 100%; height: 180px; background: var(--card2); display: flex; align-items: center; justify-content: center; font-size: 48px; overflow: hidden; position: relative; }
+  .product-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .product-info { padding: 14px; }
+  .product-category { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--yellow); margin-bottom: 6px; font-weight: 600; }
+  .product-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
+  .product-price { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--yellow); }
+  .product-seller { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .product-seller-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+  .product-seller-row span { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .seller-avatar-sm { width: 20px; height: 20px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #000; overflow: hidden; }
+  .delete-btn { position: absolute; top: 10px; right: 10px; background: rgba(12,12,12,0.8); border: 1px solid rgba(255,77,77,0.4); color: var(--red); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; opacity: 0; transition: opacity .2s, background .15s; z-index: 10; }
+  .product-card:hover .delete-btn { opacity: 1; }
+  .delete-btn:hover { background: rgba(255,77,77,0.15); }
+  .photo-count-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.65); color: #fff; font-size: 11px; font-weight: 600; border-radius: 20px; padding: 3px 8px; pointer-events: none; }
+  .empty-state { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* MODALS */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: var(--card); border: 1px solid var(--border2); border-radius: 20px; padding: 36px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; animation: modalIn 0.25s cubic-bezier(.22,1,.36,1); }
+  @keyframes modalIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 1px; }
+  .modal-close { background: var(--card2); border: 1px solid var(--border2); color: var(--muted); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: color .2s; }
+  .modal-close:hover { color: var(--text); }
+
+  /* FORM */
+  .form-group { margin-bottom: 18px; }
+  .form-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+  .form-input, .form-select, .form-textarea { width: 100%; background: var(--card2); border: 1px solid var(--border2); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color .2s; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: rgba(245,196,0,0.4); }
+  .form-select { appearance: none; cursor: pointer; }
+  .form-textarea { resize: vertical; min-height: 90px; }
+
+  /* PHOTO UPLOAD */
+  .photo-upload-zone { border: 2px dashed var(--border2); border-radius: 12px; padding: 22px; text-align: center; cursor: pointer; transition: border-color .2s; position: relative; }
+  .photo-upload-zone:hover, .photo-upload-zone.dragover { border-color: rgba(245,196,0,0.5); }
+  .photo-upload-zone input { display: none; }
+  .upload-icon { font-size: 28px; margin-bottom: 6px; }
+  .upload-text { font-size: 13px; color: var(--muted); }
+  .upload-sub { font-size: 11px; color: var(--muted); margin-top: 3px; opacity: 0.6; }
+  .photo-strip { display: none; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .photo-thumb { position: relative; width: 72px; height: 72px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border2); flex-shrink: 0; }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-thumb-remove { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.75); border: none; color: #fff; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .photo-thumb-remove:hover { background: var(--red); }
+  .add-more-thumb { width: 72px; height: 72px; border-radius: 8px; border: 2px dashed var(--border2); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--muted); cursor: pointer; transition: border-color .2s, color .2s; flex-shrink: 0; position: relative; }
+  .add-more-thumb:hover { border-color: rgba(245,196,0,0.5); color: var(--yellow); }
+  .add-more-thumb input { display: none; }
+  .upload-progress { display: none; margin-top: 10px; background: var(--card2); border-radius: 8px; overflow: hidden; height: 6px; }
+  .upload-progress-bar { height: 100%; background: var(--yellow); border-radius: 8px; width: 0%; transition: width .3s; }
+  .submit-btn { width: 100%; padding: 16px; background: var(--yellow); border: none; border-radius: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1.5px; color: #000; cursor: pointer; transition: transform .15s, box-shadow .15s; margin-top: 8px; }
+  .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 24px var(--yellow-glow); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* DETAIL MODAL */
+  .detail-carousel { position: relative; width: 100%; height: 260px; border-radius: 12px; overflow: hidden; background: var(--card2); margin-bottom: 20px; cursor: zoom-in; }
+  .detail-carousel-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .detail-carousel-emoji { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 64px; }
+  .carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.55); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 18px; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 5; }
+  .carousel-arrow.prev { left: 10px; }
+  .carousel-arrow.next { right: 10px; }
+  .carousel-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; }
+  .carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; }
+  .carousel-dot.active { background: #fff; }
+  .detail-category { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--yellow); margin-bottom: 8px; }
+  .detail-name { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 1px; margin-bottom: 8px; }
+  .detail-price { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--yellow); margin-bottom: 16px; }
+  .detail-desc { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
+  .detail-seller { font-size: 12px; color: var(--muted); padding-bottom: 16px; border-bottom: 1px solid var(--border2); }
+  .detail-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .msg-btn { flex: 1; padding: 14px; background: var(--yellow); border: none; border-radius: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; color: #000; cursor: pointer; transition: transform .15s; }
+  .msg-btn:hover { transform: translateY(-2px); }
+  .msg-btn.hidden { display: none; }
+  .detail-delete-btn { flex: 1; padding: 14px; background: rgba(255,77,77,0.08); border: 1px solid rgba(255,77,77,0.3); border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; color: var(--red); cursor: pointer; display: none; }
+  .detail-delete-btn:hover { background: rgba(255,77,77,0.16); }
+  .detail-delete-btn.visible { display: block; }
+
+  /* ── INBOX MODAL ── */
+  .inbox-modal { max-width: 700px; padding: 0; overflow: hidden; height: 80vh; display: flex; flex-direction: column; }
+  .inbox-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border2); flex-shrink: 0; }
+  .inbox-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; }
+  .inbox-body { display: flex; flex: 1; overflow: hidden; }
+
+  /* thread list */
+  .thread-list { width: 260px; flex-shrink: 0; border-right: 1px solid var(--border2); overflow-y: auto; }
+  .thread-item { display: flex; align-items: center; gap: 10px; padding: 14px 16px; cursor: pointer; border-bottom: 1px solid var(--border2); transition: background .15s; position: relative; }
+  .thread-item:hover { background: var(--card2); }
+  .thread-item.active { background: rgba(245,196,0,0.06); border-left: 3px solid var(--yellow); }
+  .thread-item.unread .thread-name { font-weight: 700; color: var(--text); }
+  .thread-item.unread .thread-preview { color: var(--text); }
+  .thread-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--yellow); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #000; overflow: hidden; flex-shrink: 0; }
+  .thread-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .thread-info { overflow: hidden; flex: 1; }
+  .thread-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .thread-preview { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .thread-time { font-size: 10px; color: var(--muted); flex-shrink: 0; }
+  .thread-unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; }
+  .thread-empty { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  /* chat pane */
+  .chat-pane { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .chat-header { padding: 14px 20px; border-bottom: 1px solid var(--border2); flex-shrink: 0; }
+  .chat-header-name { font-size: 14px; font-weight: 600; }
+  .chat-header-item { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .chat-placeholder { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; flex-direction: column; gap: 8px; }
+  .chat-placeholder .ph-icon { font-size: 36px; opacity: 0.4; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .chat-msg { display: flex; flex-direction: column; max-width: 72%; }
+  .chat-msg.mine { align-self: flex-end; align-items: flex-end; }
+  .chat-msg.theirs { align-self: flex-start; align-items: flex-start; }
+  .chat-bubble { padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.5; }
+  .chat-msg.mine .chat-bubble { background: var(--yellow); color: #000; border-bottom-right-radius: 4px; }
+  .chat-msg.theirs .chat-bubble { background: var(--card2); color: var(--text); border-bottom-left-radius: 4px; }
+  .chat-time { font-size: 10px; color: var(--muted); margin-top: 3px; padding: 0 4px; }
+  .chat-sender-name { font-size: 10px; color: var(--muted); margin-bottom: 3px; padding: 0 4px; }
+  .chat-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border2); flex-shrink: 0; }
+  .chat-input { flex: 1; background: var(--card2); border: 1px solid var(--border2); border-radius: 20px; padding: 10px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color .2s; resize: none; }
+  .chat-input:focus { border-color: rgba(245,196,0,0.4); }
+  .chat-send-btn { background: var(--yellow); border: none; border-radius: 50%; width: 38px; height: 38px; color: #000; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; align-self: flex-end; transition: transform .15s; }
+  .chat-send-btn:hover { transform: scale(1.08); }
+  .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* COMPOSE FIRST MESSAGE */
+  .compose-modal { max-width: 440px; }
+  .msg-seller-info { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 14px; background: var(--card2); border-radius: 12px; }
+  .msg-seller-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--yellow); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #000; overflow: hidden; flex-shrink: 0; }
+  .msg-seller-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .msg-seller-name { font-weight: 600; font-size: 14px; }
+  .msg-seller-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .msg-textarea { width: 100%; background: var(--card2); border: 1px solid var(--border2); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; resize: vertical; min-height: 100px; transition: border-color .2s; }
+  .msg-textarea:focus { border-color: rgba(245,196,0,0.4); }
+  .msg-send-btn { width: 100%; padding: 14px; margin-top: 12px; background: var(--yellow); border: none; border-radius: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; color: #000; cursor: pointer; }
+  .msg-send-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* LIGHTBOX */
+  .lightbox { display: none; position: fixed; inset: 0; z-index: 900; background: rgba(0,0,0,0.93); align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
+  .lightbox.active { display: flex; }
+  .lightbox-img { max-width: 90vw; max-height: 78vh; object-fit: contain; border-radius: 8px; }
+  .lightbox-close { position: fixed; top: 18px; right: 20px; background: rgba(255,255,255,0.12); border: none; color: #fff; width: 38px; height: 38px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .lightbox-counter { font-size: 13px; color: rgba(255,255,255,0.45); }
+  .lightbox-arrows { display: flex; gap: 12px; }
+  .lightbox-arrow { background: rgba(255,255,255,0.12); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .lightbox-arrow:hover { background: rgba(255,255,255,0.22); }
+
+  /* CONFIRM DELETE */
+  .confirm-modal { background: var(--card); border: 1px solid var(--border2); border-radius: 20px; padding: 32px; width: 100%; max-width: 380px; animation: modalIn 0.2s cubic-bezier(.22,1,.36,1); text-align: center; }
+  .confirm-modal h3 { font-family: 'Bebas Neue', sans-serif; font-size: 26px; margin-bottom: 8px; }
+  .confirm-modal p { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+  .confirm-actions { display: flex; gap: 10px; }
+  .confirm-cancel { flex: 1; padding: 12px; background: var(--card2); border: 1px solid var(--border2); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .confirm-delete { flex: 1; padding: 12px; background: rgba(255,77,77,0.1); border: 1px solid rgba(255,77,77,0.4); border-radius: 10px; color: var(--red); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .confirm-delete:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .loading-grid { grid-column: 1/-1; display: flex; justify-content: center; padding: 48px; }
+  .loader { width: 32px; height: 32px; border: 3px solid var(--border2); border-top-color: var(--yellow); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-thumb { background: rgba(245,196,0,0.15); border-radius: 3px; }
+
+  /* ── COMMENTS ── */
+  .comments-section { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border2); }
+  .comments-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 14px; letter-spacing: 0.3px; }
+  .comments-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; max-height: 220px; overflow-y: auto; }
+  .comment-item { display: flex; gap: 9px; }
+  .comment-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #000; overflow: hidden; margin-top: 2px; }
+  .comment-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .comment-body { flex: 1; background: var(--card2); border-radius: 12px; border-bottom-left-radius: 4px; padding: 9px 12px; }
+  .comment-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+  .comment-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .comment-time { font-size: 10px; color: var(--muted); }
+  .comment-text { font-size: 13px; color: var(--text); line-height: 1.5; word-break: break-word; }
+  .comment-empty { font-size: 12px; color: var(--muted); text-align: center; padding: 10px 0; }
+  .comment-input-row { display: flex; gap: 8px; align-items: flex-end; }
+  .comment-input-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #000; overflow: hidden; }
+  .comment-input-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .comment-input {
+    flex: 1; background: var(--card2); border: 1px solid var(--border2);
+    border-radius: 20px; padding: 9px 14px;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px;
+    outline: none; resize: none; transition: border-color .2s; max-height: 80px; overflow-y: auto;
+  }
+  .comment-input:focus { border-color: rgba(245,196,0,0.4); }
+  .comment-send {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    background: var(--yellow); border: none; color: #000;
+    font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: transform .15s; align-self: flex-end;
+  }
+  .comment-send:hover { transform: scale(1.1); }
+  .comment-send:disabled { opacity: 0.4; cursor: default; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <div class="badge">TIP</div>
+    <span class="wordmark">TIP <span>MARKETPLACE</span></span>
+  </a>
+  <ul class="nav-menu">
+    <li><button class="nav-btn active" data-filter="all">All</button></li>
+    <li><button class="nav-btn" data-filter="Academic">Academic</button></li>
+    <li><button class="nav-btn" data-filter="General">General</button></li>
+    <li><button class="nav-btn" data-filter="Food">Food</button></li>
+  </ul>
+  <div class="nav-search">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="flex-shrink:0">
+      <circle cx="6.5" cy="6.5" r="5" stroke="#666" stroke-width="1.5"/>
+      <path d="M10.5 10.5L14 14" stroke="#666" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Search listings…" autocomplete="off" />
+  </div>
+  <div class="nav-right">
+    <div class="profile-wrap">
+      <div class="profile-btn" id="profileToggle">
+        <div class="profile-avatar" id="navAvatar"><span id="navInitial">?</span></div>
+        <span class="profile-name" id="navName">Loading…</span>
+      </div>
+      <div class="dropdown-menu" id="profileDropdown">
+        <div class="dropdown-profile-header">
+          <div class="dropdown-profile-avatar" id="dropdownAvatar"><span id="dropdownInitial">?</span></div>
+          <div class="dropdown-profile-info">
+            <div class="dropdown-profile-name" id="dropdownName">—</div>
+            <div class="dropdown-profile-email" id="dropdownEmail">—</div>
+          </div>
+        </div>
+        <button class="dropdown-item" id="navProfile">Profile</button>
+        <button class="dropdown-item" id="navMessages">
+          Messages
+          <span class="unread-badge" id="unreadBadge" style="display:none"></span>
+        </button>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item logout" id="signOutBtn">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <main class="main-feed">
+    <div class="cta-bar">
+      <p><strong>Got something to sell?</strong> Post your item and reach TIP students instantly.</p>
+      <button class="cta-btn" id="openPostBtn">+ POST ITEM</button>
+    </div>
+    <div class="feed-header">
+      <h2><span>PRODUCTS</span></h2>
+      <div class="sort-wrap">
+        <select class="sort-select" id="sortSelect">
+          <option value="newest">Newest First</option>
+          <option value="low">₱ Price: Low → High</option>
+          <option value="high">₱ Price: High → Low</option>
+        </select>
+        <span class="sort-chevron">▾</span>
+      </div>
+    </div>
+    <div id="productGrid" class="product-grid">
+      <div class="loading-grid"><div class="loader"></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- POST MODAL -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Post an Item</div>
+      <button class="modal-close" id="closePostBtn">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Item Name</label>
+      <input class="form-input" id="itemName" type="text" placeholder="e.g. Engineering Drawing Set" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <select class="form-select" id="itemCategory">
+        <option value="Academic">Academic</option>
+        <option value="General">General</option>
+        <option value="Food">Food</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Price (₱)</label>
+      <input class="form-input" id="itemPrice" type="number" min="0" placeholder="e.g. 250" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-textarea" id="itemDesc" placeholder="Describe your item…"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Photos <span style="color:var(--muted);font-size:11px;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <div class="photo-upload-zone" id="photoDropZone">
+        <input type="file" id="imgFileMain" accept="image/*" multiple />
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">Click or drag photos here</div>
+        <div class="upload-sub">JPG, PNG, WEBP</div>
+      </div>
+      <div class="photo-strip" id="photoStrip"></div>
+      <div class="upload-progress" id="uploadProgress">
+        <div class="upload-progress-bar" id="uploadProgressBar"></div>
+      </div>
+    </div>
+    <button class="submit-btn" id="submitBtn">Post Item</button>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="detailTitle">Item</div>
+      <button class="modal-close" id="closeDetailBtn">✕</button>
+    </div>
+    <div class="detail-carousel" id="detailCarousel">
+      <div class="detail-carousel-emoji" id="detailCarouselEmoji"></div>
+      <img class="detail-carousel-img" id="detailCarouselImg" alt="" />
+      <button class="carousel-arrow prev" id="carouselPrev">‹</button>
+      <button class="carousel-arrow next" id="carouselNext">›</button>
+      <div class="carousel-dots" id="carouselDots"></div>
+    </div>
+    <div class="detail-category" id="detailCategory"></div>
+    <div class="detail-name" id="detailName"></div>
+    <div class="detail-price" id="detailPrice"></div>
+    <div class="detail-desc" id="detailDesc"></div>
+    <div class="detail-seller" id="detailSeller"></div>
+    <div class="detail-actions">
+      <button class="msg-btn" id="detailMsgBtn">💬 Message Seller</button>
+      <button class="detail-delete-btn" id="detailDeleteBtn">Delete Listing</button>
+    </div>
+
+    <!-- COMMENTS -->
+    <div class="comments-section">
+      <div class="comments-title" id="commentsTitle">Comments</div>
+      <div class="comments-list" id="commentsList">
+        <div class="comment-empty">No comments yet. Be the first!</div>
+      </div>
+      <div class="comment-input-row">
+        <div class="comment-input-avatar" id="commentMyAvatar"></div>
+        <textarea class="comment-input" id="commentInput" placeholder="Write a comment…" rows="1"></textarea>
+        <button class="comment-send" id="commentSendBtn" disabled>➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPOSE FIRST MESSAGE MODAL -->
+<div class="modal-overlay" id="composeModal">
+  <div class="modal compose-modal">
+    <div class="modal-header">
+      <div class="modal-title">Message Seller</div>
+      <button class="modal-close" id="closeComposeBtn">✕</button>
+    </div>
+    <div class="msg-seller-info">
+      <div class="msg-seller-avatar" id="composeAvatar"></div>
+      <div>
+        <div class="msg-seller-name" id="composeName"></div>
+        <div class="msg-seller-sub" id="composeSub"></div>
+      </div>
+    </div>
+    <textarea class="msg-textarea" id="composeText" placeholder="Hi! I'm interested in your listing…"></textarea>
+    <button class="msg-send-btn" id="composeSendBtn">Send Message</button>
+  </div>
+</div>
+
+<!-- INBOX MODAL -->
+<div class="modal-overlay" id="inboxModal">
+  <div class="modal inbox-modal">
+    <div class="inbox-header">
+      <div class="inbox-title">Messages</div>
+      <button class="modal-close" id="closeInboxBtn">✕</button>
+    </div>
+    <div class="inbox-body">
+      <!-- left: thread list -->
+      <div class="thread-list" id="threadList">
+        <div class="thread-empty">No conversations yet.</div>
+      </div>
+      <!-- right: chat pane -->
+      <div class="chat-pane" id="chatPane">
+        <div class="chat-placeholder">
+          <div class="ph-icon">💬</div>
+          <span>Select a conversation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">✕</button>
+  <img class="lightbox-img" id="lightboxImg" alt="" />
+  <div class="lightbox-counter" id="lightboxCounter"></div>
+  <div class="lightbox-arrows">
+    <button class="lightbox-arrow" id="lightboxPrev">‹</button>
+    <button class="lightbox-arrow" id="lightboxNext">›</button>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="confirm-modal">
+    <h3>Delete Listing?</h3>
+    <p>This will permanently remove your listing. This cannot be undone.</p>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" id="confirmCancelBtn">Cancel</button>
+      <button class="confirm-delete" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+  import {
+    getFirestore, collection, addDoc, deleteDoc, doc, setDoc, getDoc,
+    onSnapshot, serverTimestamp, query, orderBy, where,
+    getDocs, updateDoc, or
+  } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDtWOAUuHIGeAGScFF0MNZlTTfL6o-vvqY",
+    authDomain: "tip-marketplace.firebaseapp.com",
+    projectId: "tip-marketplace",
+    storageBucket: "tip-marketplace.firebasestorage.app",
+    messagingSenderId: "327363102547",
+    appId: "1:327363102547:web:101bbed6022f328f80c3a6"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  let currentUser     = null;
+  let allListings     = [];
+  let activeFilter    = 'all';
+  let searchQuery     = '';
+  let activeSort      = 'newest';
+  let currentDetailId = null;
+  let selectedFiles   = [];
+  let carouselImages  = [];
+  let carouselIndex   = 0;
+  let lightboxImages  = [];
+  let lightboxIndex   = 0;
+
+  // messaging state
+  let allThreads         = [];
+  let activeThreadId     = null;
+  let chatUnsub          = null;
+  let threadsUnsub       = null;
+  let commentsUnsub      = null;
+  // profile photo cache: uid -> base64 photo string
+  const profileCache     = {};
+
+  function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function catEmoji(cat) { return { Academic:'📚', General:'📦', Food:'🍱' }[cat] || '📦'; }
+  function timeAgo(ts) {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const diff = (Date.now() - d) / 1000;
+    if (diff < 60)   return 'now';
+    if (diff < 3600) return `${Math.floor(diff/60)}m`;
+    if (diff < 86400)return `${Math.floor(diff/3600)}h`;
+    return `${Math.floor(diff/86400)}d`;
+  }
+  function fmtTime(ts) {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function compressToBase64(file, maxWidth = 600, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = url;
+    });
+  }
+
+  // ── AUTH ──
+  onAuthStateChanged(auth, user => {
+    if (!user) { window.location.href = 'login.html'; return; }
+    currentUser = user;
+    document.body.classList.add('ready');
+    const first = (user.displayName || 'User').split(' ')[0];
+    document.getElementById('navName').textContent = first;
+    document.getElementById('dropdownName').textContent  = user.displayName || 'User';
+    document.getElementById('dropdownEmail').textContent = user.email || '';
+    // Set initial avatar (will be overridden by profile listener below)
+    setNavAvatar(user.photoURL, first);
+    // Subscribe to own profile doc so nav avatar updates when user changes photo
+    onSnapshot(doc(db, 'profiles', user.uid), snap => {
+      const photo = snap.exists() ? (snap.data().photoBase64 || user.photoURL) : user.photoURL;
+      const name  = snap.exists() ? (snap.data().displayName || user.displayName || 'User') : (user.displayName || 'User');
+      const f     = name.split(' ')[0];
+      profileCache[user.uid] = photo;
+      setNavAvatar(photo, f);
+      document.getElementById('navName').textContent       = f;
+      document.getElementById('dropdownName').textContent  = name;
+    });
+    // start listening to threads once we know who the user is
+    subscribeThreads();
+  });
+
+  function setNavAvatar(photo, firstName) {
+    const initial = (firstName || 'U')[0].toUpperCase();
+    // nav pill avatar
+    const navAv = document.getElementById('navAvatar');
+    navAv.innerHTML = photo
+      ? `<img src="${photo}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`
+      : `<span id="navInitial">${initial}</span>`;
+    // dropdown avatar
+    const ddAv = document.getElementById('dropdownAvatar');
+    ddAv.innerHTML = photo
+      ? `<img src="${photo}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`
+      : `<span id="dropdownInitial">${initial}</span>`;
+  }
+
+  document.getElementById('signOutBtn').addEventListener('click', () =>
+    signOut(auth).then(() => { window.location.href = 'login.html'; })
+  );
+  document.getElementById('navProfile').addEventListener('click', () => { closeDropdown(); window.location.href = 'profile.html'; });
+  document.getElementById('navMessages').addEventListener('click', () => { closeDropdown(); window.location.href = 'messages.html'; });
+
+  function closeDropdown() { document.getElementById('profileDropdown').classList.remove('active'); }
+  document.getElementById('profileToggle').addEventListener('click', e => { e.stopPropagation(); document.getElementById('profileDropdown').classList.toggle('active'); });
+  document.addEventListener('click', closeDropdown);
+  document.getElementById('profileDropdown').addEventListener('click', e => e.stopPropagation());
+
+  // ── LISTINGS ──
+  const q = query(collection(db, 'listings'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, snap => {
+    allListings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // subscribe to each seller's profile so their photo stays fresh
+    const seenSellers = new Set();
+    allListings.forEach(item => {
+      if (item.sellerId && !seenSellers.has(item.sellerId)) {
+        seenSellers.add(item.sellerId);
+        onSnapshot(doc(db, 'profiles', item.sellerId), snap => {
+          if (snap.exists() && snap.data().photoBase64) {
+            profileCache[item.sellerId] = snap.data().photoBase64;
+          } else {
+            // fall back to whatever is stored in the listing
+            if (!profileCache[item.sellerId]) profileCache[item.sellerId] = item.sellerPhoto || null;
+          }
+          renderListings(); // re-render so card avatars update
+        }, () => {});
+      }
+    });
+    renderListings();
+  });
+
+  function renderListings() {
+    const grid = document.getElementById('productGrid');
+    let list = allListings;
+    if (activeFilter === 'mine') list = list.filter(l => currentUser && l.sellerId === currentUser.uid);
+    else if (activeFilter !== 'all') list = list.filter(l => l.category === activeFilter);
+    if (searchQuery) {
+      const sq = searchQuery.toLowerCase();
+      list = list.filter(l => l.name?.toLowerCase().includes(sq) || l.description?.toLowerCase().includes(sq) || l.sellerName?.toLowerCase().includes(sq));
+    }
+    if (list.length === 0) {
+      grid.innerHTML = `<div class="empty-state"><div class="icon">🛒</div><p>${searchQuery ? `No results for "${esc(searchQuery)}".` : 'No listings yet. Be the first to post!'}</p></div>`;
+      return;
+    }
+    // apply sort
+    if (activeSort === 'low')  list = [...list].sort((a,b) => Number(a.price) - Number(b.price));
+    if (activeSort === 'high') list = [...list].sort((a,b) => Number(b.price) - Number(a.price));
+    // 'newest' keeps Firestore's default desc order
+    grid.innerHTML = list.map(item => {
+      const cover = item.imagesBase64?.length ? item.imagesBase64[0] : (item.imageBase64 || null);
+      const photoCount = item.imagesBase64?.length || (item.imageBase64 ? 1 : 0);
+      const isOwn = currentUser && item.sellerId === currentUser.uid;
+      const delBtn = isOwn ? `<button class="delete-btn" onclick="handleDeleteClick(event,'${item.id}')" title="Delete">🗑</button>` : '';
+      const badge  = photoCount > 1 ? `<div class="photo-count-badge">📷 ${photoCount}</div>` : '';
+      const sellerPhoto = profileCache[item.sellerId] || item.sellerPhoto || null;
+      const sellerInitial = (item.sellerName || 'U')[0].toUpperCase();
+      const sellerAvatarHtml = sellerPhoto
+        ? `<img src="${sellerPhoto}" alt="${esc(item.sellerName)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`
+        : `<span>${sellerInitial}</span>`;
+      return `<div class="product-card" onclick="openDetail('${item.id}')">${delBtn}<div class="product-img">${cover ? `<img src="${cover}" alt="${esc(item.name)}" loading="lazy"/>` : catEmoji(item.category)}${badge}</div><div class="product-info"><div class="product-category">${esc(item.category)}</div><div class="product-name">${esc(item.name)}</div><div class="product-price">₱${Number(item.price).toLocaleString()}</div><div class="product-seller-row"><div class="seller-avatar-sm">${sellerAvatarHtml}</div><span>by ${esc(item.sellerName || 'Unknown')}</span></div></div></div>`;
+    }).join('');
+  }
+
+  document.querySelectorAll('[data-filter]').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); activeFilter = btn.dataset.filter; renderListings();
+  }));
+  document.getElementById('sortSelect').addEventListener('change', e => {
+    activeSort = e.target.value; renderListings();
+  });
+  document.getElementById('searchInput').addEventListener('input', e => { searchQuery = e.target.value.trim(); renderListings(); });
+
+  // ── POST MODAL ──
+  document.getElementById('openPostBtn').addEventListener('click', () => document.getElementById('postModal').classList.add('active'));
+  document.getElementById('closePostBtn').addEventListener('click', closePostModal);
+  document.getElementById('postModal').addEventListener('click', e => { if (e.target === document.getElementById('postModal')) closePostModal(); });
+  function closePostModal() { document.getElementById('postModal').classList.remove('active'); resetForm(); }
+  function resetForm() {
+    ['itemName','itemPrice','itemDesc'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('imgFileMain').value = ''; selectedFiles = []; renderStrip();
+    document.getElementById('uploadProgress').style.display = 'none';
+    document.getElementById('uploadProgressBar').style.width = '0%';
+  }
+
+  function addFiles(fileList) {
+    const valid = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+    selectedFiles = selectedFiles.concat(valid); renderStrip();
+  }
+  document.getElementById('imgFileMain').addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
+  const dropZone = document.getElementById('photoDropZone');
+  dropZone.addEventListener('click', () => document.getElementById('imgFileMain').click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); addFiles(e.dataTransfer.files); });
+
+  function renderStrip() {
+    const strip = document.getElementById('photoStrip');
+    const zone  = document.getElementById('photoDropZone');
+    if (selectedFiles.length === 0) { zone.style.display = ''; strip.style.display = 'none'; strip.innerHTML = ''; return; }
+    zone.style.display = 'none'; strip.style.display = 'flex';
+    strip.innerHTML = selectedFiles.map((f, i) => `<div class="photo-thumb"><img src="${URL.createObjectURL(f)}" alt=""/><button class="photo-thumb-remove" onclick="removePhoto(${i})">✕</button></div>`).join('');
+    strip.innerHTML += `<div class="add-more-thumb" title="Add more photos" onclick="this.querySelector('input').click()"><input type="file" accept="image/*" multiple onchange="addMoreFiles(this)"/>+</div>`;
+  }
+  window.removePhoto  = i => { selectedFiles.splice(i,1); renderStrip(); };
+  window.addMoreFiles = input => { addFiles(input.files); input.value=''; };
+
+  document.getElementById('submitBtn').addEventListener('click', async () => {
+    const name=document.getElementById('itemName').value.trim(), cat=document.getElementById('itemCategory').value, price=document.getElementById('itemPrice').value, desc=document.getElementById('itemDesc').value.trim();
+    if (!name||!price) { alert('Please fill in the item name and price.'); return; }
+    const btn=document.getElementById('submitBtn'), progEl=document.getElementById('uploadProgress'), progBar=document.getElementById('uploadProgressBar');
+    btn.disabled=true; btn.textContent='Processing…';
+    try {
+      let imageBase64=null, imagesBase64=[];
+      if (selectedFiles.length>0) {
+        progEl.style.display='block'; progBar.style.width='10%'; btn.textContent='Compressing images…';
+        let done=0;
+        imagesBase64 = await Promise.all(selectedFiles.map(async f => { const b=await compressToBase64(f); done++; progBar.style.width=`${10+Math.round(done/selectedFiles.length*60)}%`; return b; }));
+        imageBase64=imagesBase64[0]; progBar.style.width='80%'; btn.textContent='Saving…';
+      }
+      await addDoc(collection(db,'listings'), { name, category:cat, price:Number(price), description:desc, imageBase64, imagesBase64, sellerName:currentUser.displayName||'Unknown', sellerEmail:currentUser.email, sellerPhoto:currentUser.photoURL, sellerId:currentUser.uid, createdAt:serverTimestamp() });
+      progBar.style.width='100%'; setTimeout(closePostModal,300);
+    } catch(err) { console.error(err); alert('Failed to post: '+err.message); }
+    finally { btn.disabled=false; btn.textContent='Post Item'; }
+  });
+
+  // ── DETAIL MODAL ──
+  window.openDetail = id => {
+    const item=allListings.find(l=>l.id===id); if (!item) return;
+    currentDetailId=id;
+    document.getElementById('detailTitle').textContent=item.name;
+    document.getElementById('detailCategory').textContent=item.category;
+    document.getElementById('detailName').textContent=item.name;
+    document.getElementById('detailPrice').textContent=`₱${Number(item.price).toLocaleString()}`;
+    document.getElementById('detailDesc').textContent=item.description||'No description provided.';
+    document.getElementById('detailSeller').textContent=`Posted by ${item.sellerName||'Unknown'} · ${item.sellerEmail||''}`;
+    const isOwn=currentUser&&item.sellerId===currentUser.uid;
+    document.getElementById('detailDeleteBtn').classList.toggle('visible',isOwn);
+    document.getElementById('detailMsgBtn').classList.toggle('hidden',isOwn);
+    const imgs=item.imagesBase64?.length?item.imagesBase64:(item.imageBase64||item.imageUrl)?[item.imageBase64||item.imageUrl]:[];
+    carouselImages=imgs; carouselIndex=0; updateCarousel();
+    document.getElementById('detailModal').classList.add('active');
+    loadComments(id);
+  };
+
+  function updateCarousel() {
+    const emojiEl=document.getElementById('detailCarouselEmoji'), imgEl=document.getElementById('detailCarouselImg');
+    const prevBtn=document.getElementById('carouselPrev'), nextBtn=document.getElementById('carouselNext');
+    const dotsEl=document.getElementById('carouselDots'), carousel=document.getElementById('detailCarousel');
+    const item=allListings.find(l=>l.id===currentDetailId);
+    if (!carouselImages.length) { emojiEl.style.display='flex'; imgEl.style.display='none'; emojiEl.textContent=catEmoji(item?.category); prevBtn.style.display=nextBtn.style.display='none'; dotsEl.innerHTML=''; carousel.style.cursor='default'; return; }
+    emojiEl.style.display='none'; imgEl.style.display='block'; imgEl.src=carouselImages[carouselIndex]; carousel.style.cursor='zoom-in';
+    const multi=carouselImages.length>1;
+    prevBtn.style.display=nextBtn.style.display=multi?'flex':'none';
+    dotsEl.innerHTML=multi?carouselImages.map((_,i)=>`<div class="carousel-dot${i===carouselIndex?' active':''}" onclick="setCarousel(${i})"></div>`).join(''):'';
+  }
+  window.setCarousel=i=>{carouselIndex=i;updateCarousel();};
+  document.getElementById('carouselPrev').addEventListener('click',e=>{e.stopPropagation();carouselIndex=(carouselIndex-1+carouselImages.length)%carouselImages.length;updateCarousel();});
+  document.getElementById('carouselNext').addEventListener('click',e=>{e.stopPropagation();carouselIndex=(carouselIndex+1)%carouselImages.length;updateCarousel();});
+  document.getElementById('detailCarousel').addEventListener('click',()=>{if(carouselImages.length)openLightbox(carouselImages,carouselIndex);});
+  document.getElementById('closeDetailBtn').addEventListener('click',()=>{
+    document.getElementById('detailModal').classList.remove('active');
+    currentDetailId=null;
+    if (commentsUnsub) { commentsUnsub(); commentsUnsub=null; }
+  });
+  document.getElementById('detailModal').addEventListener('click',e=>{
+    if(e.target===document.getElementById('detailModal')){
+      document.getElementById('detailModal').classList.remove('active');
+      currentDetailId=null;
+      if (commentsUnsub) { commentsUnsub(); commentsUnsub=null; }
+    }
+  });
+
+  // ── COMPOSE (first message to seller) ──
+  document.getElementById('detailMsgBtn').addEventListener('click', () => {
+    const item=allListings.find(l=>l.id===currentDetailId); if (!item) return;
+    const av=document.getElementById('composeAvatar'); av.innerHTML='';
+    if (item.sellerPhoto) { const img=document.createElement('img'); img.src=item.sellerPhoto; av.appendChild(img); }
+    else { av.textContent=(item.sellerName||'U')[0].toUpperCase(); }
+    document.getElementById('composeName').textContent=item.sellerName||'Unknown';
+    document.getElementById('composeSub').textContent=`Re: ${item.name} · ₱${Number(item.price).toLocaleString()}`;
+    document.getElementById('composeText').value='';
+    document.getElementById('composeModal').classList.add('active');
+  });
+  document.getElementById('closeComposeBtn').addEventListener('click',()=>document.getElementById('composeModal').classList.remove('active'));
+  document.getElementById('composeModal').addEventListener('click',e=>{if(e.target===document.getElementById('composeModal'))document.getElementById('composeModal').classList.remove('active');});
+
+  document.getElementById('composeSendBtn').addEventListener('click', async () => {
+    const item = allListings.find(l => l.id === currentDetailId);
+    if (!item) return;
+    const text = document.getElementById('composeText').value.trim();
+    if (!text) { alert('Write a message first.'); return; }
+
+    const btn = document.getElementById('composeSendBtn');
+    btn.disabled = true; btn.textContent = 'Sending…';
+
+    try {
+      // Deterministic conversation ID — same pair + listing always gets same thread
+      const convId  = [currentUser.uid, item.sellerId].sort().join('_') + '_' + currentDetailId;
+      const convRef = doc(db, 'conversations', convId);
+
+      // Check if conversation doc already exists
+      const convSnap = await getDoc(convRef);
+
+      if (!convSnap.exists()) {
+        // Create the conversation document for the first time
+        await setDoc(convRef, {
+          listingId:   currentDetailId,
+          listingName: item.name,
+          listingPrice: item.price,
+          buyerId:     currentUser.uid,
+          buyerName:   currentUser.displayName || 'Unknown',
+          buyerPhoto:  currentUser.photoURL || null,
+          sellerId:    item.sellerId,
+          sellerName:  item.sellerName || 'Unknown',
+          sellerPhoto: item.sellerPhoto || null,
+          participants: [currentUser.uid, item.sellerId],
+          lastMessage:  text,
+          lastSenderId: currentUser.uid,
+          lastAt:       serverTimestamp(),
+          unreadCount:  { [item.sellerId]: 1, [currentUser.uid]: 0 }
+        });
+      } else {
+        // Update existing conversation
+        const existing = convSnap.data();
+        await setDoc(convRef, {
+          lastMessage:  text,
+          lastSenderId: currentUser.uid,
+          lastAt:       serverTimestamp(),
+          unreadCount: {
+            ...existing.unreadCount,
+            [item.sellerId]: (existing.unreadCount?.[item.sellerId] || 0) + 1
+          }
+        }, { merge: true });
+      }
+
+      // Add the message to the subcollection
+      await addDoc(collection(db, 'conversations', convId, 'messages'), {
+        senderId:   currentUser.uid,
+        senderName: currentUser.displayName || 'Unknown',
+        text,
+        createdAt:  serverTimestamp()
+      });
+
+      document.getElementById('composeModal').classList.remove('active');
+      document.getElementById('detailModal').classList.remove('active');
+      window.location.href = `messages.html?t=${convId}`;
+
+    } catch (err) {
+      console.error(err);
+      alert('Failed to send: ' + err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Send Message';
+    }
+  });
+
+  // ── INBOX ──
+  function openInbox(openThreadId) {
+    document.getElementById('inboxModal').classList.add('active');
+    if (openThreadId) openThread(openThreadId);
+  }
+  document.getElementById('closeInboxBtn').addEventListener('click',()=>{
+    document.getElementById('inboxModal').classList.remove('active');
+    if (chatUnsub) { chatUnsub(); chatUnsub=null; }
+    activeThreadId=null;
+  });
+  document.getElementById('inboxModal').addEventListener('click',e=>{
+    if(e.target===document.getElementById('inboxModal')){
+      document.getElementById('inboxModal').classList.remove('active');
+      if(chatUnsub){chatUnsub();chatUnsub=null;} activeThreadId=null;
+    }
+  });
+
+  function subscribeThreads() {
+    if (!currentUser) return;
+    if (threadsUnsub) threadsUnsub();
+    const tq = query(collection(db,'conversations'), where('participants','array-contains',currentUser.uid), orderBy('lastAt','desc'));
+    threadsUnsub = onSnapshot(tq, snap => {
+      allThreads = snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderThreadList();
+      // unread count for badge
+      const unread = allThreads.reduce((acc,t)=>acc+(t.unreadCount?.[currentUser.uid]||0),0);
+      const badge=document.getElementById('unreadBadge');
+      if (unread>0) { badge.textContent=unread>99?'99+':unread; badge.style.display=''; }
+      else { badge.style.display='none'; }
+    });
+  }
+
+  function renderThreadList() {
+    const el=document.getElementById('threadList');
+    if (!allThreads.length) { el.innerHTML='<div class="thread-empty">No conversations yet.</div>'; return; }
+    el.innerHTML = allThreads.map(t => {
+      const isActive = t.id===activeThreadId;
+      const unread   = t.unreadCount?.[currentUser.uid]||0;
+      const isMine   = t.lastSenderId===currentUser.uid;
+      const otherName = currentUser.uid===t.buyerId ? t.sellerName : t.buyerName;
+      const otherPhoto= currentUser.uid===t.buyerId ? t.sellerPhoto : t.buyerPhoto;
+      const preview   = (isMine?'You: ':'')+t.lastMessage;
+      const avatarHtml = otherPhoto
+        ? `<img src="${esc(otherPhoto)}" alt=""/>`
+        : `<span>${(otherName||'U')[0].toUpperCase()}</span>`;
+      return `<div class="thread-item${isActive?' active':''}${unread?' unread':''}" onclick="openThread('${t.id}')">
+        <div class="thread-avatar">${avatarHtml}</div>
+        <div class="thread-info">
+          <div class="thread-name">${esc(otherName)}</div>
+          <div class="thread-preview">${esc(preview)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+          <div class="thread-time">${timeAgo(t.lastAt)}</div>
+          ${unread?`<div class="thread-unread-dot"></div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window.openThread = async (threadId) => {
+    activeThreadId = threadId;
+    renderThreadList();
+
+    const thread = allThreads.find(t=>t.id===threadId);
+    if (!thread) return;
+
+    // mark as read
+    await setDoc(doc(db,'conversations',threadId), { [`unreadCount.${currentUser.uid}`]: 0 }, { merge:true });
+
+    const otherName  = currentUser.uid===thread.buyerId ? thread.sellerName : thread.buyerName;
+
+    const pane = document.getElementById('chatPane');
+    pane.innerHTML = `
+      <div class="chat-header">
+        <div class="chat-header-name">${esc(otherName)}</div>
+        <div class="chat-header-item">📦 ${esc(thread.listingName)} · ₱${Number(thread.listingPrice||0).toLocaleString()}</div>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="chatInput" placeholder="Type a message…" rows="1"></textarea>
+        <button class="chat-send-btn" id="chatSendBtn">➤</button>
+      </div>`;
+
+    // auto-grow textarea
+    const ta=document.getElementById('chatInput');
+    ta.addEventListener('input',()=>{ ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,120)+'px'; });
+    ta.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMsg(threadId);} });
+    document.getElementById('chatSendBtn').addEventListener('click',()=>sendChatMsg(threadId));
+
+    // unsub previous
+    if (chatUnsub) chatUnsub();
+    const mq=query(collection(db,'conversations',threadId,'messages'),orderBy('createdAt','asc'));
+    chatUnsub=onSnapshot(mq, snap=>{
+      const msgs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderMessages(msgs, thread);
+    });
+  };
+
+  function renderMessages(msgs, thread) {
+    const el=document.getElementById('chatMessages'); if(!el) return;
+    if (!msgs.length) { el.innerHTML='<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px">No messages yet — say hi!</div>'; return; }
+    el.innerHTML = msgs.map((m,i) => {
+      const mine=m.senderId===currentUser.uid;
+      const showName=!mine && (i===0||msgs[i-1].senderId!==m.senderId);
+      return `<div class="chat-msg ${mine?'mine':'theirs'}">
+        ${showName?`<div class="chat-sender-name">${esc(m.senderName)}</div>`:''}
+        <div class="chat-bubble">${esc(m.text)}</div>
+        <div class="chat-time">${fmtTime(m.createdAt)}</div>
+      </div>`;
+    }).join('');
+    el.scrollTop=el.scrollHeight;
+  }
+
+  async function sendChatMsg(threadId) {
+    const ta=document.getElementById('chatInput'); if(!ta) return;
+    const text=ta.value.trim(); if(!text) return;
+    const btn=document.getElementById('chatSendBtn'); btn.disabled=true;
+    ta.value=''; ta.style.height='auto';
+    const thread=allThreads.find(t=>t.id===threadId); if(!thread) return;
+    const otherId=currentUser.uid===thread.buyerId?thread.sellerId:thread.buyerId;
+    try {
+      await Promise.all([
+        addDoc(collection(db,'conversations',threadId,'messages'),{
+          senderId:currentUser.uid, senderName:currentUser.displayName||'Unknown',
+          text, createdAt:serverTimestamp()
+        }),
+        setDoc(doc(db,'conversations',threadId),{
+          lastMessage:text, lastSenderId:currentUser.uid, lastAt:serverTimestamp(),
+          [`unreadCount.${otherId}`]:(thread.unreadCount?.[otherId]||0)+1
+        },{merge:true})
+      ]);
+    } catch(err) { console.error(err); ta.value=text; }
+    finally { btn.disabled=false; }
+  }
+
+  // ── LIGHTBOX ──
+  function openLightbox(imgs,start){lightboxImages=imgs;lightboxIndex=start;updateLightbox();document.getElementById('lightbox').classList.add('active');}
+  function updateLightbox(){
+    document.getElementById('lightboxImg').src=lightboxImages[lightboxIndex];
+    const multi=lightboxImages.length>1;
+    document.getElementById('lightboxCounter').textContent=multi?`${lightboxIndex+1} / ${lightboxImages.length}`:'';
+    document.getElementById('lightboxPrev').style.display=multi?'flex':'none';
+    document.getElementById('lightboxNext').style.display=multi?'flex':'none';
+  }
+  document.getElementById('lightboxClose').addEventListener('click',()=>document.getElementById('lightbox').classList.remove('active'));
+  document.getElementById('lightbox').addEventListener('click',e=>{if(e.target===document.getElementById('lightbox'))document.getElementById('lightbox').classList.remove('active');});
+  document.getElementById('lightboxPrev').addEventListener('click',e=>{e.stopPropagation();lightboxIndex=(lightboxIndex-1+lightboxImages.length)%lightboxImages.length;updateLightbox();});
+  document.getElementById('lightboxNext').addEventListener('click',e=>{e.stopPropagation();lightboxIndex=(lightboxIndex+1)%lightboxImages.length;updateLightbox();});
+  document.addEventListener('keydown',e=>{
+    if(document.getElementById('lightbox').classList.contains('active')){
+      if(e.key==='ArrowLeft'){lightboxIndex=(lightboxIndex-1+lightboxImages.length)%lightboxImages.length;updateLightbox();}
+      if(e.key==='ArrowRight'){lightboxIndex=(lightboxIndex+1)%lightboxImages.length;updateLightbox();}
+      if(e.key==='Escape')document.getElementById('lightbox').classList.remove('active');
+    }
+  });
+
+  // ── COMMENTS ──
+  function timeAgoShort(ts) {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const diff = (Date.now() - d) / 1000;
+    if (diff < 60)    return 'just now';
+    if (diff < 3600)  return `${Math.floor(diff/60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+    return `${Math.floor(diff/86400)}d ago`;
+  }
+
+  function loadComments(listingId) {
+    // unsubscribe from previous listing's comments
+    if (commentsUnsub) { commentsUnsub(); commentsUnsub = null; }
+
+    // set up my avatar in the input row
+    const myPhoto = profileCache[currentUser.uid] || currentUser.photoURL || null;
+    const myInitial = (currentUser.displayName || 'U')[0].toUpperCase();
+    const myAv = document.getElementById('commentMyAvatar');
+    if (myAv) {
+      myAv.innerHTML = myPhoto
+        ? `<img src="${myPhoto}" alt="me" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`
+        : myInitial;
+    }
+
+    // wire input
+    const input = document.getElementById('commentInput');
+    const sendBtn = document.getElementById('commentSendBtn');
+    if (!input || !sendBtn) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+    sendBtn.disabled = true;
+
+    input.oninput = () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 80) + 'px';
+      sendBtn.disabled = !input.value.trim();
+    };
+    input.onkeydown = e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); postComment(listingId); }
+    };
+    sendBtn.onclick = () => postComment(listingId);
+
+    // live subscribe
+    const cq = query(
+      collection(db, 'listings', listingId, 'comments'),
+      orderBy('createdAt', 'asc')
+    );
+    commentsUnsub = onSnapshot(cq, snap => {
+      const comments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderComments(comments);
+    }, err => {
+      // index not ready — fall back without orderBy
+      const cqSimple = collection(db, 'listings', listingId, 'comments');
+      commentsUnsub = onSnapshot(cqSimple, snap => {
+        const comments = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .sort((a,b) => (a.createdAt?.seconds||0) - (b.createdAt?.seconds||0));
+        renderComments(comments);
+      });
+    });
+  }
+
+  function renderComments(comments) {
+    const list = document.getElementById('commentsList');
+    const title = document.getElementById('commentsTitle');
+    if (!list) return;
+    if (title) title.textContent = `Comments${comments.length ? ` (${comments.length})` : ''}`;
+    if (!comments.length) {
+      list.innerHTML = '<div class="comment-empty">No comments yet. Be the first!</div>';
+      return;
+    }
+    list.innerHTML = comments.map(c => {
+      const photo = profileCache[c.userId] || c.userPhoto || null;
+      const initial = (c.userName || 'U')[0].toUpperCase();
+      const avatarHtml = photo
+        ? `<img src="${photo}" alt="${esc(c.userName)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`
+        : initial;
+      return `<div class="comment-item">
+        <div class="comment-avatar">${avatarHtml}</div>
+        <div class="comment-body">
+          <div class="comment-header">
+            <span class="comment-name">${esc(c.userName || 'Unknown')}</span>
+            <span class="comment-time">${timeAgoShort(c.createdAt)}</span>
+          </div>
+          <div class="comment-text">${esc(c.text)}</div>
+        </div>
+      </div>`;
+    }).join('');
+    // scroll to bottom
+    list.scrollTop = list.scrollHeight;
+  }
+
+  async function postComment(listingId) {
+    const input = document.getElementById('commentInput');
+    const sendBtn = document.getElementById('commentSendBtn');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    sendBtn.disabled = true;
+    input.value = '';
+    input.style.height = 'auto';
+    const myPhoto = profileCache[currentUser.uid] || currentUser.photoURL || null;
+    try {
+      await addDoc(collection(db, 'listings', listingId, 'comments'), {
+        text,
+        userId:    currentUser.uid,
+        userName:  currentUser.displayName || 'Unknown',
+        userPhoto: myPhoto,
+        createdAt: serverTimestamp()
+      });
+    } catch(err) {
+      console.error(err);
+      input.value = text; // restore on fail
+      sendBtn.disabled = false;
+    }
+  }
+
+  // ── DELETE ──
+  window.handleDeleteClick=(e,id)=>{e.stopPropagation();currentDetailId=id;document.getElementById('confirmModal').classList.add('active');};
+  document.getElementById('detailDeleteBtn').addEventListener('click',()=>document.getElementById('confirmModal').classList.add('active'));
+  document.getElementById('confirmCancelBtn').addEventListener('click',()=>document.getElementById('confirmModal').classList.remove('active'));
+  document.getElementById('confirmModal').addEventListener('click',e=>{if(e.target===document.getElementById('confirmModal'))document.getElementById('confirmModal').classList.remove('active');});
+  document.getElementById('confirmDeleteBtn').addEventListener('click',async()=>{
+    if(!currentDetailId)return;
+    const item=allListings.find(l=>l.id===currentDetailId);
+    if(!item||item.sellerId!==currentUser?.uid)return;
+    const btn=document.getElementById('confirmDeleteBtn'); btn.disabled=true; btn.textContent='Deleting…';
+    try {
+      await deleteDoc(doc(db,'listings',currentDetailId));
+      document.getElementById('confirmModal').classList.remove('active');
+      document.getElementById('detailModal').classList.remove('active');
+      currentDetailId=null;
+    } catch(err){console.error(err);alert('Failed to delete.\n'+err.message);}
+    finally{btn.disabled=false;btn.textContent='Delete';}
+  });
+</script>
+</body>
+</html>
